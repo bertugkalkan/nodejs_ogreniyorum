@@ -1,0 +1,20 @@
+{
+  "name": "nodejs_oreniyorum",
+  "version": "1.0.0",
+  "main": "app/index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app/index.mjs",
+    "dev": "nodemon app/index.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
