@@ -1,9 +1,13 @@
 import express from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
 
 const users = [
     { id: 1, name: 'John Doe' },
@@ -79,6 +83,15 @@ app.get("/api/products", (request, response) => {
 
     return response.status(200).send(filteredProducts);
 })
+
+app.get("/api/products/:id", (req, res) => {
+    const product = products.find(product => product.id === parseInt(req.params.id));
+    if (!product) {
+        return res.status(404).send('Product not found');
+    }
+    return res.status(200).send(product);
+})
+
 
 app.listen(port, () => console.log(`Server is running on localhost:${port}`));
 
