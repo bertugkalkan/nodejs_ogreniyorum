@@ -61,5 +61,24 @@ app.get('/api/users/:id', (request, response) => {
     return response.status(200).send(user);
 })
 
-app.listen(port, () => console.log(`Server is running on port ${port}`));
+app.get("/api/products", (request, response) => {
+    const {
+        query: {filter, value}
+    } = request;
+    
+    if (!filter || !value) {
+        return response.status(200).json(products);
+    }
+
+    const filteredProducts = products.filter(product => {
+        if (product[filter] === undefined) {
+            return response.status(400).send('Invalid filter');
+        }
+        return String(product[filter]).toLowerCase().includes(String(value).toLowerCase());
+    });
+
+    return response.status(200).send(filteredProducts);
+})
+
+app.listen(port, () => console.log(`Server is running on localhost:${port}`));
 
