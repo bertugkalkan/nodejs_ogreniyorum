@@ -65,6 +65,48 @@ app.get('/api/users/:id', (request, response) => {
     return response.status(200).send(user);
 })
 
+app.put('/api/users/:id', (request, response) => {
+    const {
+        body,
+        params: {id}
+    } = request;
+
+    const userIndex = users.findIndex(user => user.id === parseInt(id));
+    if (userIndex === -1) {
+        return response.status(404).send('User not found');
+    }
+    // PUT: Kaynağı tamamen body ile değiştirir. ID'nin değişmemesini sağlar.
+    users[userIndex] = { ...body, id: parseInt(id) };
+    return response.status(200).send(users[userIndex]);
+})
+app.patch('/api/users/:id', (request, response) => {
+    const {
+        body,
+        params: {id}
+    } = request;
+    
+    const userIndex = users.findIndex(user => user.id === parseInt(id));
+    if (userIndex === -1) {
+        return response.status(404).send('User not found');
+    }
+    // PATCH: Var olan kaynağın üzerine sadece body'de gelen alanları ekler/günceller.
+    users[userIndex] = { ...users[userIndex], ...body };
+    return response.status(200).send(users[userIndex]);
+})
+app.delete('/api/users/:id', (request, response) => {
+    const {
+        params: {id}
+    } = request;
+   
+    const index = users.findIndex(user => user.id === parseInt(id));
+    if (index === -1) {
+        response.status(404).send('User not found');
+    }
+    users.splice(index, 1);
+    return response.status(204).send();
+})
+ 
+
 app.get("/api/products", (request, response) => {
     const {
         query: {filter, value}
