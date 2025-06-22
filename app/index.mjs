@@ -1,5 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { query, body, validationResult } from 'express-validator';
+import { createUserSchema, listQuerySchema } from './utils/validationSchemas.mjs';
 
 dotenv.config();
 
@@ -8,7 +10,19 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
+const resolveUserIndex = (request, response, next) => {
+    const {
+        params: {id}
+    } = request;
 
+    const userIndex = users.findIndex(user => user.id === parseInt(id));
+    if (userIndex === -1) {
+        return response.status(404).send('User not found');
+    }
+    request.userIndex = userIndex;
+    request.userId = parseInt(id);
+    next();
+}
 const users = [
     { id: 1, name: 'John Doe' },
     { id: 2, name: 'Jane Doe' },
@@ -27,7 +41,12 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.get('/api/users', (request, response) => {
+app.get('/api/users', listQuerySchema, (request, response) => {
+    const errors = validationResult(request);
+    if (!errors.isEmpty()) {
+        return response.status(400).json({ errors: errors.array() });
+    }
+
     const {
         query: {filter, value}
     } = request;
@@ -48,7 +67,12 @@ app.get('/api/users', (request, response) => {
     return response.status(200).send(filteredUsers);
 });
 
-app.post('/api/users', (request, response) => {
+app.post('/api/users', createUserSchema, (request, response) => {
+    const errors = validationResult(request);
+    if (!errors.isEmpty()) {
+        return response.status(400).json({ errors: errors.array() });
+    }
+
     const {
         body: {name}
     } = request;
@@ -57,57 +81,49 @@ app.post('/api/users', (request, response) => {
     return response.status(201).send(newUser);
 });
 
-app.get('/api/users/:id', (request, response) => {
-    const user = users.find(user => user.id === parseInt(request.params.id));
+app.get('/api/users/:id', resolveUserIndex, (request, response) => {
+    const { userIndex } = request;
+    const user = users[userIndex]
     if (!user) {
-        response.status(404).send('User not found');
+        return response.status(404).send('User not found');
     }
     return response.status(200).send(user);
 })
 
-app.put('/api/users/:id', (request, response) => {
+app.put('/api/users/:id', resolveUserIndex, (request, response) => {
     const {
         body,
-        params: {id}
+        userIndex,
+        userId
     } = request;
-
-    const userIndex = users.findIndex(user => user.id === parseInt(id));
-    if (userIndex === -1) {
-        return response.status(404).send('User not found');
-    }
     // PUT: Kaynağı tamamen body ile değiştirir. ID'nin değişmemesini sağlar.
-    users[userIndex] = { ...body, id: parseInt(id) };
+    users[userIndex] = {id: userId, ...body };
     return response.status(200).send(users[userIndex]);
 })
-app.patch('/api/users/:id', (request, response) => {
+app.patch('/api/users/:id', resolveUserIndex, (request, response) => {
     const {
         body,
-        params: {id}
+        userIndex,
     } = request;
     
-    const userIndex = users.findIndex(user => user.id === parseInt(id));
-    if (userIndex === -1) {
-        return response.status(404).send('User not found');
-    }
     // PATCH: Var olan kaynağın üzerine sadece body'de gelen alanları ekler/günceller.
     users[userIndex] = { ...users[userIndex], ...body };
     return response.status(200).send(users[userIndex]);
 })
-app.delete('/api/users/:id', (request, response) => {
-    const {
-        params: {id}
-    } = request;
+app.delete('/api/users/:id', resolveUserIndex, (request, response) => {
+    const { userIndex } = request;
    
-    const index = users.findIndex(user => user.id === parseInt(id));
-    if (index === -1) {
-        response.status(404).send('User not found');
-    }
-    users.splice(index, 1);
+    users.splice(userIndex, 1);
     return response.status(204).send();
 })
  
 
-app.get("/api/products", (request, response) => {
+app.get("/api/products", listQuerySchema, (request, response) => {
+    const errors = validationResult(request);
+    if (!errors.isEmpty()) {
+        return response.status(400).json({ errors: errors.array() });
+    }
+
     const {
         query: {filter, value}
     } = request;
@@ -117,8 +133,11 @@ app.get("/api/products", (request, response) => {
     }
 
     const filteredProducts = products.filter(product => {
+        // Bu kontrol artık büyük ölçüde gereksiz çünkü validation katmanı
+        // 'id' ve 'name' dışında bir key gelmesini engelleyecektir.
+        // Yine de bir güvenlik katmanı olarak kalmasında sakınca yok.
         if (product[filter] === undefined) {
-            return response.status(400).send('Invalid filter');
+            return false; 
         }
         return String(product[filter]).toLowerCase().includes(String(value).toLowerCase());
     });
