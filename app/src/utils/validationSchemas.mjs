@@ -4,7 +4,7 @@ export const createUserSchema = [
     body('name')
         .notEmpty().withMessage('Name cannot be empty')
         .isLength({ min: 3 }).withMessage('Name must be at least 3 characters long')
-        .isString().withMessage('Name must be a string')
+        .isString().withMessage('Name must be a string'),
 ];
 
 // Hem kullanıcılar hem de ürünler için kullanılabilecek tek, güçlü ve merkezi bir şema
