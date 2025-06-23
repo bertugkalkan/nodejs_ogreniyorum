@@ -2,29 +2,19 @@ import { Router } from 'express';
 import { validationResult } from 'express-validator';
 import { createUserSchema, listQuerySchema } from '../utils/validationSchemas.mjs';
 import { users } from '../utils/constants.mjs';
-import { resolveUserIndex } from '../utils/middleware.mjs';
+import { resolveUserIndex, queryParser } from '../utils/middleware.mjs';
+
 const router = Router();
-
-// Bu router'a özel veriler ve middleware'ler
-
-
-
 
 // Rotalar
 // GET /api/users
-router.get('/', listQuerySchema, (request, response) => {
+router.get('/', queryParser, listQuerySchema, (request, response) => {
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
         return response.status(400).json({ errors: errors.array() });
     }
 
-    const { query: { filter, value } } = request;
-    if (!filter || !value) {
-        return response.status(200).json(users);
-    }
-    const filteredUsers = users.filter(user => 
-        String(user[filter]).toLowerCase().includes(String(value).toLowerCase())
-    );
+    const { filteredUsers } = request;
     return response.status(200).send(filteredUsers);
 });
 

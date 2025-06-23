@@ -1,3 +1,5 @@
+import { products, users } from "./constants.mjs";
+
 const resolveProductIndex = (request, response, next) => {
     const { params: { id } } = request;
     const productIndex = products.findIndex(product => product.id === parseInt(id));
@@ -22,4 +24,20 @@ const resolveUserIndex = (request, response, next) => {
     next();
 };
 
-export { resolveProductIndex, resolveUserIndex };
+const queryParser = (request, response, next) => {
+    const { query: { filter, value } } = request;
+    if (!filter || !value) {
+        return response.status(200).json(users);
+    }
+    const filteredUsers = users.filter(user => {
+        if (filteredUsers.length === 0) {
+            return response.status(404).send('No users found');
+        }
+        return String(user[filter]).toLowerCase().includes(String(value).toLowerCase())
+    });
+
+    request.filteredUsers = filteredUsers;
+    next();
+}
+
+export { resolveProductIndex, resolveUserIndex, queryParser };
