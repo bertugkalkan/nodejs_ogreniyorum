@@ -9,6 +9,8 @@ import { resolveProductIndex } from "../utils/middleware.mjs";
 const router = Router();
 
 router.get("/", listQuerySchema, (request, response) => {
+    console.log(request.headers.cookie);
+    console.log(request.cookies);
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
         return response.status(400).json({ errors: errors.array() });
