@@ -9,13 +9,15 @@ const router = Router();
 // Rotalar
 // GET /api/users
 router.get('/', queryParser, listQuerySchema, (request, response) => {
+    console.log(request.session);
+    console.log(request.session.id);
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
         return response.status(400).json({ errors: errors.array() });
     }
 
-    const { filteredUsers } = request;
-    return response.status(200).send(filteredUsers);
+    const { filteredData } = request;
+    return response.status(200).send(filteredData);
 });
 
 // POST /api/users

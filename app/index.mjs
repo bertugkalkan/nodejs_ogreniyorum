@@ -13,9 +13,9 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser('BU-COK-GIZLI-BIR-ANAHTARDIR'));
 app.use(session({
-    secret: 'BU-COK-GIZLI-BIR-ANAHTARDIR',
+    secret: 'bertug',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { maxAge: 60000*60}
 }))
 
@@ -24,27 +24,14 @@ app.use('/api/users', userRouter);
 app.use('/api/products', productRouter);
 
 app.get("/", (request, response) => {
+    console.log(request.session);
+    console.log(request.session.id);
+    request.session.visited = true;
     response.cookie("userId", "123", { signed: true });
-    response.send("Signed cookie has been set! Now go to /profile to see it.");
+    response.send("Signed cookie set.");
 });
 
-app.get("/profile", (request, response) => {
-    const { userId } = request.signedCookies;
 
-    console.log('Regular Cookies (unsigned):', request.cookies);
-    console.log('Signed Cookies (verified):', request.signedCookies);
-
-    if (userId) {
-        response.send(`Welcome to your profile, User #${userId}! Your identity is verified.`);
-    } else {
-        response.status(401).send("Access Denied. Your cookie is either missing or has been tampered with. Please visit the homepage to get a new one.");
-    }
-});
-
-app.get("/clear-cookie", (request, response) => {
-    response.clearCookie('userId');
-    response.send('Cookie cleared');
-})
 
 app.listen(port, () => console.log(`Server is running on localhost:${port}`));
 
