@@ -24,22 +24,4 @@ const resolveUserIndex = (request, response, next) => {
     next();
 };
 
-const queryParser = (request, response, next) => {
-    const { query: { filter, value } } = request;
-    if (!filter || !value) {
-        request.filteredData = users; // Not: filteredUsers yerine daha genel bir isim kullanmak daha iyi.
-        return next();
-    }
-    const filteredUsers = users.filter(user => {
-        return String(user[filter]).toLowerCase().includes(String(value).toLowerCase())
-    });
-
-    if (filteredUsers.length === 0) {
-        return response.status(404).send('No users found');
-    }
-
-    request.filteredData = filteredUsers;
-    next();
-}
-
-export { resolveProductIndex, resolveUserIndex, queryParser };
+export { resolveProductIndex, resolveUserIndex };

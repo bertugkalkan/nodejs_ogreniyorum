@@ -2,22 +2,39 @@ import { Router } from 'express';
 import { validationResult } from 'express-validator';
 import { createUserSchema, listQuerySchema } from '../utils/validationSchemas.mjs';
 import { users } from '../utils/constants.mjs';
-import { resolveUserIndex, queryParser } from '../utils/middleware.mjs';
+import { resolveUserIndex } from '../utils/middleware.mjs';
 
 const router = Router();
 
 // Rotalar
 // GET /api/users
-router.get('/', queryParser, listQuerySchema, (request, response) => {
+router.get('/', listQuerySchema, (request, response) => {
+    // Session logları istendiği gibi korunuyor.
     console.log(request.session);
-    console.log(request.session.id);
+    console.log(request.sessionID);
+    
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
         return response.status(400).json({ errors: errors.array() });
     }
 
-    const { filteredData } = request;
-    return response.status(200).send(filteredData);
+    // Filtreleme mantığı artık doğrudan bu fonksiyonun içinde.
+    const { query: { filter, value } } = request;
+
+    if (!filter || !value) {
+        return response.status(200).json(users);
+    }
+    
+    const filteredUsers = users.filter(user => {
+        if (user[filter] === undefined) return false;
+        return String(user[filter]).toLowerCase().includes(String(value).toLowerCase());
+    });
+
+    if (filteredUsers.length === 0) {
+        return response.status(404).send({ message: 'No users found.' });
+    }
+    
+    return response.status(200).send(filteredUsers);
 });
 
 // POST /api/users
