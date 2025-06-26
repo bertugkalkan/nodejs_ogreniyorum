@@ -56,21 +56,39 @@ router.get('/:id', resolveUserIndex, (request, response) => {
 });
 
 // PUT /api/users/:id
-router.put('/:id', resolveUserIndex, (request, response) => {
+router.put('/:id', resolveUserIndex,createUserSchema, (request, response) => {
+    const errors = validationResult(request);
+
+    if (!errors.isEmpty()) {
+        return response.status(400).json({ errors: errors.array() });
+    }
+    
     const { body, userIndex, userId } = request;
     users[userIndex] = { id: userId, ...body };
     return response.status(200).send(users[userIndex]);
 });
 
 // PATCH /api/users/:id
-router.patch('/:id', resolveUserIndex, (request, response) => {
+router.patch('/:id', resolveUserIndex, createUserSchema, (request, response) => {
+    const errors = validationResult(request);
+
+    if (!errors.isEmpty()) {
+        return response.status(400).json({ errors: errors.array() });
+    }
+
     const { body, userIndex } = request;
     users[userIndex] = { ...users[userIndex], ...body };
     return response.status(200).send(users[userIndex]);
 });
 
 // DELETE /api/users/:id
-router.delete('/:id', resolveUserIndex, (request, response) => {
+router.delete('/:id', resolveUserIndex,createUserSchema, (request, response) => {
+    const errors = validationResult(request);
+
+    if (!errors.isEmpty()) {
+        return response.status(400).json({ errors: errors.array() });
+    }
+
     users.splice(request.userIndex, 1);
     return response.status(204).send();
 });
