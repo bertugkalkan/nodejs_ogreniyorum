@@ -5,11 +5,15 @@ import productRouter from './src/routes/products.mjs';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import {users, products} from './src/utils/constants.mjs';
+import passport from 'passport';
+import {Strategy} from 'passport-local';
+import './src/strategies/local-strategy.mjs';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
 
 app.use(express.json());
 app.use(cookieParser('BU-COK-GIZLI-BIR-ANAHTARDIR'));
@@ -19,6 +23,8 @@ app.use(session({
     saveUninitialized: false,
     cookie: { maxAge: 60000*60}
 }))
+app.use(passport.initialize());
+app.use(passport.session());
 
 // User Router'ını Ana Uygulamaya Tanıtma
 app.use('/api/users', userRouter);
@@ -32,27 +38,22 @@ app.get("/", (request, response) => {
     response.send("Signed cookie set.");
 });
 
-app.post("/api/auth", (request, response) => {
-    const {
-         body: {username, password}
-    } = request;
-    const findUser = users.find(user => user.name === username)
-    if (!findUser || findUser.password !== String(password)) {
-        return response.status(401).json({message: "Kullanıcı bulunamadı veya şifre hatalı."})
-    }
-    request.session.user = findUser;
-    response.json({message: "Giriş başarılı."}, {Kullanıcı: findUser})
-    
-})
+app.post("/api/auth", passport.authenticate('local'), (request, response) => {response.json({message: "Giriş yapıldı.", Kullanıcı: request.user})});
 
 app.get("/api/auth/status", (request, response) => {
-    request.sessionStore.get(request.sessionID, (err, session) => {
-        console.log(session);
-    });
-    if (request.session.user) {
-        return response.json({message: "Giriş yapıldı.", Kullanıcı: request.session.user})
+    if (request.isAuthenticated()) {
+        return response.json({message: "Giriş yapıldı.", Kullanıcı: request.user})
     }
     response.json({message: "Giriş yapılmadı."})
+})
+
+app.post("/api/auth/logout", (request, response) => {
+    request.logout((err) => {
+        if (err) {
+            return response.status(500).json({message: "Çıkış yapılırken bir hata oluştu."})
+        }
+        response.json({message: "Çıkış yapıldı."})
+    });
 })
 
 app.post("/api/cart", (request, response) => {
@@ -71,7 +72,7 @@ app.post("/api/cart", (request, response) => {
 })
 
 app.get("/api/cart", (request, response) => {
-    if (!request.session.user) {
+    if (!request.isAuthenticated()) {
         return response.status(401).json({message: "Giriş yapınız."})
     }
     if (!request.session.cart) {
