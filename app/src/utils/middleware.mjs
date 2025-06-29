@@ -24,4 +24,11 @@ const resolveUserIndex = (request, response, next) => {
     next();
 };
 
-export { resolveProductIndex, resolveUserIndex };
+const isAuthenticated = (request, response, next) => {
+    if (request.isAuthenticated()) {
+        return next();
+    }
+    response.status(401).json({ message: "Bu işlemi yapmak için giriş yapmalısınız." });
+};
+
+export { resolveProductIndex, resolveUserIndex, isAuthenticated };

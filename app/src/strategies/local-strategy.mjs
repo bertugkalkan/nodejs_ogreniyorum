@@ -4,7 +4,6 @@ import {users} from '../utils/constants.mjs';
 
 export default passport.use(
     new Strategy((username, password, done) => {
-        console.log(username, password);
         try {
             const user = users.find(user => user.name === username);
             if (!user) {
