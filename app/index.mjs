@@ -8,11 +8,17 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from 'passport';
 import './src/strategies/local-strategy.mjs';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
 const app = express();
+
 const port = process.env.PORT || 3000;
+
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/deneme_projem')
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.log(err));
 
 app.use(express.json());
 app.use(cookieParser('BU-COK-GIZLI-BIR-ANAHTARDIR'));

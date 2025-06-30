@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { validationResult } from 'express-validator';
+import { validationResult, matchedData } from 'express-validator';
 import { createUserSchema, listQuerySchema } from '../utils/validationSchemas.mjs';
 import { users } from '../utils/constants.mjs';
 import { resolveUserIndex } from '../utils/middleware.mjs';
+import User from '../mongoose/schema/user.mjs';
 
 const router = Router();
 
@@ -38,16 +39,32 @@ router.get('/', listQuerySchema, (request, response) => {
 });
 
 // POST /api/users
-router.post('/', createUserSchema, (request, response) => {
+
+//router.post('/', createUserSchema, (request, response) => {
+//    const errors = validationResult(request);
+//    if (!errors.isEmpty()) {
+//        return response.status(400).json({ errors: errors.array() });
+//    }
+//   const { body: { name } } = request;
+//   const newUser = { id: users.length + 1, name };
+//   users.push(newUser);
+//   return response.status(201).send(newUser);
+//});
+
+router.post('/',createUserSchema, async (request,response) => {
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
         return response.status(400).json({ errors: errors.array() });
     }
-    const { body: { name } } = request;
-    const newUser = { id: users.length + 1, name };
-    users.push(newUser);
-    return response.status(201).send(newUser);
-});
+    const data = matchedData(request);
+    const user = new User(data);
+    try {
+        await user.save();
+        return response.status(201).send(user);
+    } catch (error) {
+        return response.status(400).send({ message: error.message });
+    }
+})
 
 // GET /api/users/:id
 router.get('/:id', resolveUserIndex, (request, response) => {

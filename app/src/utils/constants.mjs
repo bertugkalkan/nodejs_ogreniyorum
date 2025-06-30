@@ -6,10 +6,10 @@ const products = [
 ]
 
 const users = [
-    { id: 1, name: 'John Doe', password: '123456' },
-    { id: 2, name: 'Jane Doe', password: '12345678' },
-    { id: 3, name: 'John Smith', password: '123456789' },
-    { id: 4, name: 'Jane Smith', password: '1234567890' },
+    { id: 1, name: 'John Doe', email: 'john@doe.com', password: '123456' },
+    { id: 2, name: 'Jane Doe', email: 'jane@doe.com', password: '12345678' },
+    { id: 3, name: 'John Smith', email: 'john@smith.com', password: '123456789' },
+    { id: 4, name: 'Jane Smith', email: 'jane@smith.com', password: '1234567890' },
 ]
 
 

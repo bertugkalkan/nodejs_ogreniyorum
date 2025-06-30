@@ -5,6 +5,13 @@ export const createUserSchema = [
         .notEmpty().withMessage('Name cannot be empty')
         .isLength({ min: 3 }).withMessage('Name must be at least 3 characters long')
         .isString().withMessage('Name must be a string'),
+    body('email')
+        .notEmpty().withMessage('Email cannot be empty')
+        .isEmail().withMessage('Invalid email address')
+        .isString().withMessage('Email must be a string'),
+    body('password')
+        .notEmpty().withMessage('Password cannot be empty')
+        .isString().withMessage('Password must be a string'),
 ];
 
 // Hem kullanıcılar hem de ürünler için kullanılabilecek tek, güçlü ve merkezi bir şema
